@@ -23,8 +23,8 @@ js {
     `customer_id,
     campaign_id,
     campaign_name,
-    campaign_status`,
-    _PARTITIONTIME;
+    campaign_status,
+    _PARTITIONTIME`;
 
   const union = functions.buildViewUnion(columns, "ads", "p_ads_Campaign");
 }
