@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-config { 
+config {
   type: "view",
   schema: functions.baseSchema("ads"),
   tags: ["ads"]
@@ -23,7 +23,8 @@ js {
     `customer_id,
     campaign_id,
     campaign_name,
-    campaign_status`;
+    campaign_status`,
+    _PARTITIONTIME;
 
   const union = functions.buildViewUnion(columns, "ads", "p_ads_Campaign");
 }
@@ -31,7 +32,7 @@ SELECT DISTINCT
   "GOOGLE_ADS" AS ad_system,
   CAST(customer_id AS STRING) AS account_id,
   CAST(campaign_id AS STRING) AS campaign_id,
-  campaign_name,
+  FIRST_VALUE(campaign_name) OVER (PARTITION BY campaign_id ORDER BY _PARTITIONTIME DESC) AS campaign_name,
   campaign_status
 FROM (
 ${union}
