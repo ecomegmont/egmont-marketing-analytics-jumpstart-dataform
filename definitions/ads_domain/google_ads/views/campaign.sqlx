@@ -32,8 +32,11 @@ SELECT DISTINCT
   "GOOGLE_ADS" AS ad_system,
   CAST(customer_id AS STRING) AS account_id,
   CAST(campaign_id AS STRING) AS campaign_id,
-  FIRST_VALUE(campaign_name) OVER (PARTITION BY campaign_id ORDER BY _PARTITIONTIME DESC) AS campaign_name,
-  campaign_status
+  -- These two next fields are not really used anywhere?
+  -- First known name of the campaign
+  FIRST_VALUE(campaign_name) OVER (PARTITION BY campaign_id ORDER BY _PARTITIONTIME ASC) AS campaign_name,
+  -- Last known status of the campaign
+  FIRST_VALUE(campaign_status) OVER (PARTITION BY campaign_id ORDER BY _PARTITIONTIME DESC) AS campaign_status
 FROM (
 ${union}
 )

@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-config { 
+config {
   type: "view",
   schema: functions.baseSchema("ads"),
   tags: ["ads"]
 }
 js {
-  const columns = 
+  const columns =
     `ad_group_ad_ad_id,
     ad_group_ad_ad_group,
     customer_id,
     campaign_id,
     ad_group_ad_ad_type,
-    ad_group_ad_status`;
+    ad_group_ad_status,
+    _PARTITIONTIME`;
 
   const union = functions.buildViewUnion(columns, "ads", "p_ads_Ad");
 }
@@ -35,8 +36,8 @@ SELECT DISTINCT
   SPLIT(ad_group_ad_ad_group,'/')[ORDINAL(4)] AS adgroup_id, --extract ad_group_id from ad_group string
   CAST(customer_id AS STRING) AS account_id,
   CAST(campaign_id AS STRING) AS campaign_id,
-  ad_group_ad_ad_type AS ad_type,
-  ad_group_ad_status AS ad_status
+  FIRST_VALUE(ad_group_ad_ad_type) OVER (PARTITION BY ad_group_ad_ad_id, ad_group_ad_ad_group, campaign_id, customer_id ORDER BY _PARTITIONTIME ASC) AS ad_type,
+  FIRST_VALUE(ad_group_ad_status) OVER (PARTITION BY ad_group_ad_ad_id, ad_group_ad_ad_group, campaign_id, customer_id ORDER BY _PARTITIONTIME DESC) AS ad_status
 FROM (
 ${union}
 )
